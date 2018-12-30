@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"time"
 )
 
@@ -47,7 +46,7 @@ func publish() error {
 		defer topic.Stop()
 		for i := 0; i < 10; i++ {
 			r := topic.Publish(ctx, &pubsub.Message{
-				Data: []byte(fmt.Sprintf("hello world: %s", strconv.Itoa(i))),
+				Data: []byte(fmt.Sprintf("hello world: %d", i)),
 			})
 			id, err := r.Get(ctx)
 			if err != nil {
