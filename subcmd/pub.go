@@ -51,17 +51,13 @@ func (c *Pub) Usage() {
 }
 
 func (c *Pub) Run(args []string) error {
-	c.flagSet.Parse(args[1:])
+	subcmd := args[1]
+	c.flagSet.Parse(args[2:])
 	if c.opts.ShowHelp {
 		c.Usage()
 		return nil
 	}
 
-	cmds := c.flagSet.Args()
-	if len(cmds) != 1 {
-		return errors.New("subcmd must be single")
-	}
-	subcmd := cmds[0]
 	if c.opts.ProjectID == "" {
 		return errors.New("projectID must be provided")
 	}
@@ -70,7 +66,6 @@ func (c *Pub) Run(args []string) error {
 	}
 
 	p, err := tps.NewPublisher(c.opts.ProjectID, c.opts.TopicID)
-
 	if err != nil {
 		return err
 	}
@@ -80,6 +75,12 @@ func (c *Pub) Run(args []string) error {
 	case "create-topic":
 		t, err := p.CreateTopic(ctx)
 		fmt.Printf("topic created: %v", t)
+		if err != nil {
+			return err
+		}
+	case "delete-topic":
+		err := p.DeleteTopic(ctx)
+		fmt.Printf("topic deleted: %v", c.opts.TopicID)
 		if err != nil {
 			return err
 		}

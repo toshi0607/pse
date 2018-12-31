@@ -52,17 +52,13 @@ func (c *Sub) Usage() {
 }
 
 func (c *Sub) Run(args []string) error {
-	c.flagSet.Parse(args[1:])
+	subcmd := args[1]
+	c.flagSet.Parse(args[2:])
 	if c.opts.ShowHelp {
 		c.Usage()
 		return nil
 	}
 
-	cmds := c.flagSet.Args()
-	if len(cmds) != 1 {
-		return errors.New("subcmd must be single")
-	}
-	subcmd := cmds[0]
 	if c.opts.ProjectID == "" {
 		return errors.New("projectID must be provided")
 	}

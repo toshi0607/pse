@@ -36,6 +36,16 @@ func (p *Publisher) CreateTopic(ctx context.Context) (*pubsub.Topic, error) {
 	return topic, nil
 }
 
+func (p *Publisher) DeleteTopic(ctx context.Context) error {
+	topic := p.client.Topic(p.topicID)
+	err := topic.Delete(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (p *Publisher) PublishSampleMessage(ctx context.Context) error {
 	topic := p.client.Topic(p.topicID)
 	defer topic.Stop()
