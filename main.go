@@ -1,23 +1,28 @@
 package main
 
 import (
-	"cloud.google.com/go/pubsub"
 	"context"
 	"fmt"
 	"log"
 	"os"
 	"time"
+
+	"cloud.google.com/go/pubsub"
+	"github.com/toshi0607/pse/subcmd"
 )
 
 func main() {
-	subcmd := os.Args[1]
-
-	switch subcmd {
-	case "pub":
-		publish()
-	case "sub":
-		subscribe()
+	if err := run(); err != nil {
+		log.Fatalf("failed to run: %v", err)
 	}
+}
+
+func run() error {
+	c, err := subcmd.Repository().Find(os.Args[1])
+	if err != nil {
+		log.Fatalf("failed to find cmd: %s err:%v", os.Args[1], err)
+	}
+	return c.Run(os.Args[1:])
 }
 
 func publish() error {

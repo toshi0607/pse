@@ -8,9 +8,23 @@ import (
 )
 
 type Publisher struct {
-	client    pubsub.Client
+	client    *pubsub.Client
 	projectID string
 	topicID   string
+}
+
+func NewPublisher(projectID, topicID string) (*Publisher, error) {
+	ctx := context.Background()
+	cli, err := pubsub.NewClient(ctx, projectID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Publisher{
+		client:    cli,
+		projectID: projectID,
+		topicID:   topicID,
+	}, nil
 }
 
 func (p *Publisher) CreateTopic(ctx context.Context) (*pubsub.Topic, error) {
