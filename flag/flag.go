@@ -10,7 +10,7 @@ import (
 func New(name string, usage string) *flag.FlagSet {
 	f := flag.NewFlagSet(name, flag.ExitOnError)
 	f.Usage = func() {
-		fmt.Printf("Usage: pse %s %s\n", name, usage)
+		fmt.Printf("Usage: pse %s SUBCOMMAND %s\n", name, usage)
 		f.PrintDefaults()
 	}
 	return f

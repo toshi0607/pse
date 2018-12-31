@@ -18,6 +18,7 @@ type (
 
 	PubConfig struct {
 		ProjectID, TopicID string
+		ShowHelp           bool
 	}
 )
 
@@ -26,6 +27,7 @@ func NewPub() *Pub {
 	p.flagSet = tf.New(p.Name(), "[OPTIONS]")
 	p.flagSet.StringVar(&p.opts.ProjectID, "p", "", "GCP Project ID")
 	p.flagSet.StringVar(&p.opts.TopicID, "t", "", "Cloud Pub/Sub Topic ID")
+	p.flagSet.BoolVar(&p.opts.ShowHelp, "h", false, "Show command usage")
 	return p
 }
 
@@ -33,10 +35,33 @@ func (c *Pub) Name() string {
 	return "pub"
 }
 
-func (c *Pub) Run(args []string) error {
-	subcmd := args[1]
-	c.flagSet.Parse(args[2:])
+func (c *Pub) Summary() string {
+	return `
+pse pub SUBCOMMAND [OPTIONS]
+  Sub Commands:
+    create-topic
+      Create topic. Use -p & -t
+    publish
+      Publish sample message. Use -p & -t
+`
+}
 
+func (c *Pub) Usage() {
+	c.flagSet.Usage()
+}
+
+func (c *Pub) Run(args []string) error {
+	c.flagSet.Parse(args[1:])
+	if c.opts.ShowHelp {
+		c.Usage()
+		return nil
+	}
+
+	cmds := c.flagSet.Args()
+	if len(cmds) != 1 {
+		return errors.New("subcmd must be single")
+	}
+	subcmd := cmds[0]
 	if c.opts.ProjectID == "" {
 		return errors.New("projectID must be provided")
 	}
@@ -52,7 +77,7 @@ func (c *Pub) Run(args []string) error {
 
 	ctx := context.Background()
 	switch subcmd {
-	case "create":
+	case "create-topic":
 		t, err := p.CreateTopic(ctx)
 		fmt.Printf("topic created: %v", t)
 		if err != nil {
