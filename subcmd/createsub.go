@@ -14,6 +14,7 @@ type (
 	CreateSub struct {
 		flagSet *flag.FlagSet
 		opts    CreateSubConfig
+		sub     tps.Subscriber
 	}
 
 	CreateSubConfig struct {
@@ -23,7 +24,7 @@ type (
 )
 
 func NewCreateSub() *CreateSub {
-	c := &CreateSub{}
+	c := &CreateSub{sub: tps.NewSubscriber()}
 	c.flagSet = tf.New(c.Name(), "[OPTIONS]")
 	c.flagSet.StringVar(&c.opts.ProjectID, "p", "", "GCP Project ID")
 	c.flagSet.StringVar(&c.opts.TopicID, "t", "", "Cloud Pub/Sub Topic ID")
@@ -61,17 +62,16 @@ func (c *CreateSub) Run(args []string) error {
 		return errors.New("subscriptionID must be provided")
 	}
 
-	s, err := tps.NewSubscriber(c.opts.ProjectID, c.opts.TopicID, c.opts.SubscriptionID)
-	if err != nil {
-		return err
-	}
-
 	ctx := context.Background()
-	sub, err := s.CreateSubscription(ctx)
+	if err := c.sub.Init(ctx, c.opts.ProjectID); err != nil {
+		return err
+	}
+
+	s, err := c.sub.CreateSubscription(ctx, c.opts.SubscriptionID, c.opts.TopicID)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("subscription created: %v", sub)
 
+	fmt.Printf("subscription created: %v", s)
 	return nil
 }

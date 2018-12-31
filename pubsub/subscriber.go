@@ -8,31 +8,23 @@ import (
 	"cloud.google.com/go/pubsub"
 )
 
-type Subscriber struct {
-	client         *pubsub.Client
-	projectID      string
-	topicID        string
-	subscriptionID string
+type Subscriber interface {
+	CreateSubscription(ctx context.Context, subscriptionID string, topicID string) (*pubsub.Subscription, error)
+	ReceiveSampleMessages(ctx context.Context, subscriptionID string) error
+	Init(ctx context.Context, projectID string) error
 }
 
-func NewSubscriber(projectID, topicID, subscriptionID string) (*Subscriber, error) {
-	ctx := context.Background()
-	cli, err := pubsub.NewClient(ctx, projectID)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Subscriber{
-		client:         cli,
-		projectID:      projectID,
-		topicID:        topicID,
-		subscriptionID: subscriptionID,
-	}, nil
+type subscriber struct {
+	client *pubsub.Client
 }
 
-func (s *Subscriber) CreateSubscription(ctx context.Context) (*pubsub.Subscription, error) {
-	topic := s.client.Topic(s.topicID)
-	sub, err := s.client.CreateSubscription(ctx, s.subscriptionID, pubsub.SubscriptionConfig{
+func NewSubscriber() Subscriber {
+	return &subscriber{}
+}
+
+func (s *subscriber) CreateSubscription(ctx context.Context, subscriptionID, topicID string) (*pubsub.Subscription, error) {
+	topic := s.client.Topic(topicID)
+	sub, err := s.client.CreateSubscription(ctx, subscriptionID, pubsub.SubscriptionConfig{
 		Topic:       topic,
 		AckDeadline: 10 * time.Second,
 	})
@@ -43,8 +35,8 @@ func (s *Subscriber) CreateSubscription(ctx context.Context) (*pubsub.Subscripti
 	return sub, nil
 }
 
-func (s *Subscriber) ReceiveSampleMessages(ctx context.Context) error {
-	sub := s.client.Subscription(s.subscriptionID)
+func (s *subscriber) ReceiveSampleMessages(ctx context.Context, subscriptionID string) error {
+	sub := s.client.Subscription(subscriptionID)
 	err := sub.Receive(ctx, func(ctx context.Context, m *pubsub.Message) {
 		fmt.Printf("message received: %v\n", string(m.Data))
 		m.Ack()
@@ -52,6 +44,16 @@ func (s *Subscriber) ReceiveSampleMessages(ctx context.Context) error {
 	if err != context.Canceled {
 		return err
 	}
+
+	return nil
+}
+
+func (s *subscriber) Init(ctx context.Context, projectID string) error {
+	c, err := pubsub.NewClient(ctx, projectID)
+	if err != nil {
+		return err
+	}
+	s.client = c
 
 	return nil
 }

@@ -7,28 +7,23 @@ import (
 	"cloud.google.com/go/pubsub"
 )
 
-type Publisher struct {
-	client    *pubsub.Client
-	projectID string
-	topicID   string
+type Publisher interface {
+	CreateTopic(ctx context.Context, topicID string) (*pubsub.Topic, error)
+	DeleteTopic(ctx context.Context, topicID string) error
+	PublishSampleMessage(ctx context.Context, topicID string) error
+	Init(ctx context.Context, projectID string) error
 }
 
-func NewPublisher(projectID, topicID string) (*Publisher, error) {
-	ctx := context.Background()
-	cli, err := pubsub.NewClient(ctx, projectID)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Publisher{
-		client:    cli,
-		projectID: projectID,
-		topicID:   topicID,
-	}, nil
+type publisher struct {
+	client *pubsub.Client
 }
 
-func (p *Publisher) CreateTopic(ctx context.Context) (*pubsub.Topic, error) {
-	topic, err := p.client.CreateTopic(ctx, p.topicID)
+func NewPublisher() Publisher {
+	return &publisher{}
+}
+
+func (p *publisher) CreateTopic(ctx context.Context, topicID string) (*pubsub.Topic, error) {
+	topic, err := p.client.CreateTopic(ctx, topicID)
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +31,8 @@ func (p *Publisher) CreateTopic(ctx context.Context) (*pubsub.Topic, error) {
 	return topic, nil
 }
 
-func (p *Publisher) DeleteTopic(ctx context.Context) error {
-	topic := p.client.Topic(p.topicID)
+func (p *publisher) DeleteTopic(ctx context.Context, topicID string) error {
+	topic := p.client.Topic(topicID)
 	err := topic.Delete(ctx)
 	if err != nil {
 		return err
@@ -46,8 +41,8 @@ func (p *Publisher) DeleteTopic(ctx context.Context) error {
 	return nil
 }
 
-func (p *Publisher) PublishSampleMessage(ctx context.Context) error {
-	topic := p.client.Topic(p.topicID)
+func (p *publisher) PublishSampleMessage(ctx context.Context, topicID string) error {
+	topic := p.client.Topic(topicID)
 	defer topic.Stop()
 	for i := 0; i < 10; i++ {
 		r := topic.Publish(ctx, &pubsub.Message{
@@ -59,6 +54,16 @@ func (p *Publisher) PublishSampleMessage(ctx context.Context) error {
 		}
 		fmt.Printf("message published: %s\n", id)
 	}
+
+	return nil
+}
+
+func (s *publisher) Init(ctx context.Context, projectID string) error {
+	c, err := pubsub.NewClient(ctx, projectID)
+	if err != nil {
+		return err
+	}
+	s.client = c
 
 	return nil
 }
