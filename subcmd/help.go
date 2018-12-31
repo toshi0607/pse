@@ -24,23 +24,22 @@ func (c *Help) Summary() string {
 
 // Usage shows command usage
 func (c *Help) Usage() {
-	fmt.Printf(`
-pse
+	fmt.Printf(`Usage: pse COMMAND [OPTIONS]
   -h --help
     Show commands
   -v --version
     Show version
-
+Commands:
 `)
 	for _, c := range Repository().Commands() {
-		if c.Name() == "init" || c.Name() == "help" {
+		if c.Name() == "help" {
 			continue
 		}
-		fmt.Printf(c.Summary())
+		fmt.Printf("  %-9s  %s\n", c.Name(), c.Summary())
 	}
 	fmt.Printf(`
 See more details:
-  pse pub|sub [SUBCOMMAND] -h
+  pse COMMAND -h
 `)
 }
 

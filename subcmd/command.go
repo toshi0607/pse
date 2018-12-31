@@ -26,8 +26,11 @@ func Repository() CommandRepository {
 		commandMap: make(map[string]Command),
 	}
 	repo.commands = []Command{
-		NewPub(),
-		NewSub(),
+		NewCreateTopic(),
+		NewDeateTopic(),
+		NewPublishSample(),
+		NewCreateSub(),
+		NewReceiveSample(),
 	}
 	for _, c := range repo.commands {
 		repo.commandMap[c.Name()] = c
