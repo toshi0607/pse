@@ -12,7 +12,8 @@ import (
 type (
 	ReceiveSample struct {
 		flagSet *flag.FlagSet
-		opts    CreateSubConfig
+		opts    ReceiveSampleConfig
+		sub     tps.Subscriber
 	}
 
 	ReceiveSampleConfig struct {
@@ -22,7 +23,7 @@ type (
 )
 
 func NewReceiveSample() *ReceiveSample {
-	c := &ReceiveSample{}
+	c := &ReceiveSample{sub: tps.NewSubscriber()}
 	c.flagSet = tf.New(c.Name(), "[OPTIONS]")
 	c.flagSet.StringVar(&c.opts.ProjectID, "p", "", "GCP Project ID")
 	c.flagSet.StringVar(&c.opts.SubscriptionID, "s", "", "Cloud Pub/Sub Subscription ID")
@@ -56,13 +57,11 @@ func (c *ReceiveSample) Run(args []string) error {
 		return errors.New("subscriptionID must be provided")
 	}
 
-	s, err := tps.NewSubscriber(c.opts.ProjectID, c.opts.TopicID, c.opts.SubscriptionID)
-	if err != nil {
+	ctx := context.Background()
+	if err := c.sub.Init(ctx, c.opts.ProjectID); err != nil {
 		return err
 	}
-
-	ctx := context.Background()
-	if err := s.ReceiveSampleMessages(ctx); err != nil {
+	if err := c.sub.ReceiveSampleMessages(ctx, c.opts.SubscriptionID); err != nil {
 		return err
 	}
 
