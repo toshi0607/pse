@@ -14,6 +14,7 @@ type (
 	CreateTopic struct {
 		flagSet *flag.FlagSet
 		opts    CreateTopicConfig
+		pub     tps.Publisher
 	}
 
 	CreateTopicConfig struct {
@@ -23,7 +24,7 @@ type (
 )
 
 func NewCreateTopic() *CreateTopic {
-	c := &CreateTopic{}
+	c := &CreateTopic{pub: tps.NewPublisher()}
 	c.flagSet = tf.New(c.Name(), "[OPTIONS]")
 	c.flagSet.StringVar(&c.opts.ProjectID, "p", "", "GCP Project ID")
 	c.flagSet.StringVar(&c.opts.TopicID, "t", "", "Cloud Pub/Sub Topic ID")
@@ -57,13 +58,12 @@ func (c *CreateTopic) Run(args []string) error {
 		return errors.New("topicID must be provided")
 	}
 
-	p, err := tps.NewPublisher(c.opts.ProjectID, c.opts.TopicID)
-	if err != nil {
+	ctx := context.Background()
+	if err := c.pub.Init(ctx, c.opts.ProjectID); err != nil {
 		return err
 	}
 
-	ctx := context.Background()
-	t, err := p.CreateTopic(ctx)
+	t, err := c.pub.CreateTopic(ctx, c.opts.TopicID)
 	if err != nil {
 		return err
 	}

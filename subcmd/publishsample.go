@@ -13,6 +13,7 @@ type (
 	PublishSample struct {
 		flagSet *flag.FlagSet
 		opts    CreateTopicConfig
+		pub     tps.Publisher
 	}
 
 	PublishSampleConfig struct {
@@ -22,7 +23,7 @@ type (
 )
 
 func NewPublishSample() *PublishSample {
-	c := &PublishSample{}
+	c := &PublishSample{pub: tps.NewPublisher()}
 	c.flagSet = tf.New(c.Name(), "[OPTIONS]")
 	c.flagSet.StringVar(&c.opts.ProjectID, "p", "", "GCP Project ID")
 	c.flagSet.StringVar(&c.opts.TopicID, "t", "", "Cloud Pub/Sub Topic ID")
@@ -56,13 +57,12 @@ func (c *PublishSample) Run(args []string) error {
 		return errors.New("topicID must be provided")
 	}
 
-	p, err := tps.NewPublisher(c.opts.ProjectID, c.opts.TopicID)
-	if err != nil {
+	ctx := context.Background()
+	if err := c.pub.Init(ctx, c.opts.ProjectID); err != nil {
 		return err
 	}
 
-	ctx := context.Background()
-	if err := p.PublishSampleMessage(ctx); err != nil {
+	if err := c.pub.PublishSampleMessage(ctx, c.opts.TopicID); err != nil {
 		return err
 	}
 
