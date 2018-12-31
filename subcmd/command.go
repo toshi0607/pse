@@ -6,6 +6,8 @@ type (
 	Command interface {
 		Name() string
 		Run([]string) error
+		Summary() string
+		Usage()
 	}
 
 	CommandRepository interface {

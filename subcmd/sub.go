@@ -18,6 +18,7 @@ type (
 
 	SubConfig struct {
 		ProjectID, TopicID, SubscriptionID string
+		ShowHelp                           bool
 	}
 )
 
@@ -27,6 +28,7 @@ func NewSub() *Sub {
 	s.flagSet.StringVar(&s.opts.ProjectID, "p", "", "GCP Project ID")
 	s.flagSet.StringVar(&s.opts.TopicID, "t", "", "Cloud Pub/Sub Topic ID")
 	s.flagSet.StringVar(&s.opts.SubscriptionID, "s", "", "Cloud Pub/Sub Subscription ID")
+	s.flagSet.BoolVar(&s.opts.ShowHelp, "h", false, "Show command usage")
 	return s
 }
 
@@ -34,10 +36,33 @@ func (c *Sub) Name() string {
 	return "sub"
 }
 
-func (c *Sub) Run(args []string) error {
-	subcmd := args[1]
-	c.flagSet.Parse(args[2:])
+func (c *Sub) Summary() string {
+	return `
+pse sub SUBCOMMAND [OPTIONS]
+  Sub Commands:
+    create-subscription
+      Create topic. Use -p, -t & -s
+    receive
+      Receive sample messages with starting a subscriber process. Use -p & -t
+`
+}
 
+func (c *Sub) Usage() {
+	c.flagSet.Usage()
+}
+
+func (c *Sub) Run(args []string) error {
+	c.flagSet.Parse(args[1:])
+	if c.opts.ShowHelp {
+		c.Usage()
+		return nil
+	}
+
+	cmds := c.flagSet.Args()
+	if len(cmds) != 1 {
+		return errors.New("subcmd must be single")
+	}
+	subcmd := cmds[0]
 	if c.opts.ProjectID == "" {
 		return errors.New("projectID must be provided")
 	}
@@ -49,7 +74,7 @@ func (c *Sub) Run(args []string) error {
 
 	ctx := context.Background()
 	switch subcmd {
-	case "create":
+	case "create-subscription":
 		if c.opts.TopicID == "" {
 			return errors.New("topicID must be provided")
 		}
