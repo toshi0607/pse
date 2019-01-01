@@ -13,3 +13,6 @@
 
 # IDE
 .idea/
+
+# dep
+vendor/
