@@ -31,6 +31,7 @@ func Repository() CommandRepository {
 		NewPublishSample(),
 		NewCreateSub(),
 		NewReceiveSample(),
+		NewHelp(),
 	}
 	for _, c := range repo.commands {
 		repo.commandMap[c.Name()] = c
