@@ -8,20 +8,20 @@ import (
 	"github.com/toshi0607/pse/mock/pubsub"
 )
 
-func TestCreateTopic_NewCreateTopic(t *testing.T) {
-	t.Run("create CreateTopic successfully", func(t *testing.T) {
-		s := NewCreateTopic()
+func TestDeleteTopic_NewDeleteTopic(t *testing.T) {
+	t.Run("create DeleteTopic successfully", func(t *testing.T) {
+		s := NewDeleteTopic()
 		if s == nil {
-			t.Errorf("reateTopic should be created")
+			t.Errorf("DeleteTopic should be created")
 		}
 	})
 }
 
-func TestCreateTopic_Name(t *testing.T) {
+func TestDeleteTopic_Name(t *testing.T) {
 	t.Run("show a sub command's name successfully", func(t *testing.T) {
-		want := "create-topic"
+		want := "delete-topic"
 
-		s := NewCreateTopic()
+		s := NewDeleteTopic()
 		got := s.Name()
 		if got != want {
 			t.Errorf("got: %s, want: %s", got, want)
@@ -29,11 +29,11 @@ func TestCreateTopic_Name(t *testing.T) {
 	})
 }
 
-func TestCreateTopic_Summary(t *testing.T) {
+func TestDeleteTopic_Summary(t *testing.T) {
 	t.Run("show a sub command's summary successfully", func(t *testing.T) {
-		want := "Create topic"
+		want := "Delete topic"
 
-		s := NewCreateTopic()
+		s := NewDeleteTopic()
 		got := s.Summary()
 		if got != want {
 			t.Errorf("got: %s, want: %s", got, want)
@@ -41,7 +41,7 @@ func TestCreateTopic_Summary(t *testing.T) {
 	})
 }
 
-func TestCreateTopic_Run(t *testing.T) {
+func TestDeleteTopic_Run(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	fpub := mock_pubsub.NewMockPublisher(ctrl)
@@ -54,40 +54,40 @@ func TestCreateTopic_Run(t *testing.T) {
 		"normal": {
 			func() {
 				fpub.EXPECT().Init(gomock.Any(), "testp").Return(nil)
-				fpub.EXPECT().CreateTopic(gomock.Any(), "testt").Return(nil, nil)
-			}, []string{"create-topic", "-p", "testp", "-t", "testt"}, false,
+				fpub.EXPECT().DeleteTopic(gomock.Any(), "testt").Return(nil)
+			}, []string{"delete-topic", "-p", "testp", "-t", "testt"}, false,
 		},
 		"with help option": {
 			func() {},
-			[]string{"create-topic", "-h"}, false,
+			[]string{"delete-topic", "-h"}, false,
 		},
 		"without project ID": {
 			func() {},
-			[]string{"create-topic", "-t", "testt"}, true,
+			[]string{"delete-topic", "-t", "testt"}, true,
 		},
 		"without topic ID": {
 			func() {},
-			[]string{"create-topic", "-p", "testp"}, true,
+			[]string{"delete-topic", "-p", "testp"}, true,
 		},
 		"with Publisher.Init error": {
 			func() {
 				fpub.EXPECT().Init(gomock.Any(), "testp").Return(errors.New("test error"))
 			},
-			[]string{"create-topic", "-p", "testp", "-t", "testt"}, true,
+			[]string{"delete-topic", "-p", "testp", "-t", "testt"}, true,
 		},
-		"with Publisher.CreateTopic error": {
+		"with Publisher.DeleteTopic error": {
 			func() {
 				fpub.EXPECT().Init(gomock.Any(), "testp").Return(nil)
-				fpub.EXPECT().CreateTopic(gomock.Any(), "testt").Return(nil, errors.New("test error"))
+				fpub.EXPECT().DeleteTopic(gomock.Any(), "testt").Return(errors.New("test error"))
 			},
-			[]string{"create-topic", "-p", "testp", "-t", "testt"}, true,
+			[]string{"delete-topic", "-p", "testp", "-t", "testt"}, true,
 		},
 	}
 
 	for name, te := range tests {
 		t.Run(name, func(t *testing.T) {
 			te.init()
-			cmd := NewCreateTopic()
+			cmd := NewDeleteTopic()
 			cmd.pub = fpub
 
 			if err := cmd.Run(te.args); err != nil {

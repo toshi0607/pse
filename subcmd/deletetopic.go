@@ -23,7 +23,7 @@ type (
 	}
 )
 
-func NewDeateTopic() *DeleteTopic {
+func NewDeleteTopic() *DeleteTopic {
 	c := &DeleteTopic{pub: tps.NewPublisher()}
 	c.flagSet = tf.New(c.Name(), "[OPTIONS]")
 	c.flagSet.StringVar(&c.opts.ProjectID, "p", "", "GCP Project ID")

@@ -27,7 +27,7 @@ func Repository() CommandRepository {
 	}
 	repo.commands = []Command{
 		NewCreateTopic(),
-		NewDeateTopic(),
+		NewDeleteTopic(),
 		NewPublishSample(),
 		NewCreateSub(),
 		NewReceiveSample(),
