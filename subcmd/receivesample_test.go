@@ -5,7 +5,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
-	"github.com/toshi0607/pse/mock/pubsub"
+	"github.com/toshi0607/pse/pubsub"
 )
 
 func TestReceiveSample_NewReceiveSample(t *testing.T) {
@@ -44,7 +44,7 @@ func TestReceiveSample_Summary(t *testing.T) {
 func TestReceiveSample_Run(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	fsub := mock_pubsub.NewMockSubscriber(ctrl)
+	fsub := pubsub.NewMockSubscriber(ctrl)
 
 	tests := map[string]struct {
 		init      func()

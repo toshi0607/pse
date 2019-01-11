@@ -5,7 +5,7 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
-	"github.com/toshi0607/pse/mock/pubsub"
+	"github.com/toshi0607/pse/pubsub"
 )
 
 func TestDeleteTopic_NewDeleteTopic(t *testing.T) {
@@ -44,7 +44,7 @@ func TestDeleteTopic_Summary(t *testing.T) {
 func TestDeleteTopic_Run(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	fpub := mock_pubsub.NewMockPublisher(ctrl)
+	fpub := pubsub.NewMockPublisher(ctrl)
 
 	tests := map[string]struct {
 		init      func()
